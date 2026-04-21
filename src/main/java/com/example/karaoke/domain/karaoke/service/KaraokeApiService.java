@@ -1,10 +1,9 @@
 package com.example.karaoke.domain.karaoke.service;
 
+import com.example.karaoke.domain.karaoke.CoordinateConverter;
 import com.example.karaoke.domain.karaoke.config.KaraokeProperties;
 import com.example.karaoke.domain.karaoke.dto.KaraokeApiResponse;
 import com.example.karaoke.domain.karaoke.dto.KaraokeApiResponseDto;
-import com.example.karaoke.domain.karaoke.entity.Karaoke;
-import com.example.karaoke.domain.karaoke.repository.KaraokeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,27 +13,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 공공 데이터 api 받아오기
+ * 공공데이터 API 조회 + 좌표변환 + DTO 변환
  */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class KaraokeApiService {
+
     private final RestTemplate restTemplate;
-    private final KaraokeRepository karaokeRepository;
     private final KaraokeProperties karaokeProperties;
-
-
+    private final CoordinateConverter coordinateConverter;
 
     /**
-     * 공공데이터 전체 조회 후 DB 저장
+     * 공공데이터 전체 조회 후 DTO 반환
      */
-    @Transactional
-    public void fetchAndSaveKaraokes() {
+    public List<KaraokeApiResponseDto> fetchKaraokes() {
         int pageNo = 1;
         int numOfRows = 100;
 
-        List<Karaoke> result = new ArrayList<>();
+        List<KaraokeApiResponseDto> result = new ArrayList<>();
 
         while (true) {
             KaraokeApiResponse response = callApi(pageNo, numOfRows);
@@ -44,14 +41,12 @@ public class KaraokeApiService {
                 break;
             }
 
-            List<Karaoke> karaokeList = items.stream()
-                    .map(KaraokeApiResponseDto::from)
+            List<KaraokeApiResponseDto> dtos = items.stream()
+                    .map(this::toDto)
                     .filter(dto -> dto.getManageNo() != null && !dto.getManageNo().isBlank())
-                    .filter(dto -> !karaokeRepository.existsByManageNo(dto.getManageNo()))
-                    .map(this::toEntity)
                     .toList();
 
-            result.addAll(karaokeList);
+            result.addAll(dtos);
 
             int totalCount = response.getResponse().getBody().getTotalCount();
             if (pageNo * numOfRows >= totalCount) {
@@ -61,9 +56,7 @@ public class KaraokeApiService {
             pageNo++;
         }
 
-        if (!result.isEmpty()) {
-            karaokeRepository.saveAll(result);
-        }
+        return result;
     }
 
     private KaraokeApiResponse callApi(int pageNo, int numOfRows) {
@@ -89,19 +82,26 @@ public class KaraokeApiService {
         return response.getResponse().getBody().getItems().getItem();
     }
 
-    private Karaoke toEntity(KaraokeApiResponseDto dto) {
-        return Karaoke.builder()
-                .manageNo(dto.getManageNo())
-                .name(dto.getName())
-                .address(dto.getAddress())
-                .latitude(dto.getLatitude())
-                .longitude(dto.getLongitude())
-                .totalRooms(dto.getTotalRooms())
-                .availableRooms(dto.getTotalRooms())
-                .owner(null)
-                .build();
-    }
+    private KaraokeApiResponseDto toDto(KaraokeApiResponse.Item item) {
+        double x = KaraokeApiResponseDto.parseCoordinate(item.getCRD_INFO_X());
+        double y = KaraokeApiResponseDto.parseCoordinate(item.getCRD_INFO_Y());
 
+        if (x == 0.0 || y == 0.0) {
+            throw new IllegalArgumentException("좌표 정보가 올바르지 않습니다. manageNo=" + item.getMNG_NO());
+        }
+
+        CoordinateConverter.ConvertedCoordinate converted =
+                coordinateConverter.convertTmToWgs84(x, y);
+
+        return new KaraokeApiResponseDto(
+                item.getMNG_NO(),
+                item.getBPLC_NM(),
+                item.getROAD_NM_ADDR(),
+                converted.latitude(),
+                converted.longitude(),
+                KaraokeApiResponseDto.parseRoomCount(item.getKAROOM_RM_CNT())
+        );
+    }
 
 
 

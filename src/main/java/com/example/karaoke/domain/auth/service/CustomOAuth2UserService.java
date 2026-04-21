@@ -1,19 +1,16 @@
 package com.example.karaoke.domain.auth.service;
 
+import com.example.karaoke.domain.auth.dto.CustomOAuth2User;
 import com.example.karaoke.domain.auth.dto.KakaoUserInfo;
 import com.example.karaoke.domain.member.entity.Member;
 import com.example.karaoke.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
 import java.util.Map;
 
 @Service
@@ -23,7 +20,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private final MemberService memberService;
 
     @Override
-    public OAuth2User loadUser(OAuth2UserRequest userRequest) {
+    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException{
         DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
         Map<String, Object> attributes = oAuth2User.getAttributes();
@@ -38,16 +35,17 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         Member member = memberService.saveOrUpdateKakaoMember(
                 kakaoUserInfo.getOauthId(),
-                kakaoUserInfo.getNickName(),
-                kakaoUserInfo.getEmail()
+                kakaoUserInfo.getNickName()
         );
 
-        return new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + member.getRole().name())),
-                attributes,
-                "id"
-        );
 
+        return new CustomOAuth2User(
+                member.getId(),
+                member.getOauthId(),
+                member.getNickName(),
+                member.getRole(),
+                attributes
+        );
 
     }
 
