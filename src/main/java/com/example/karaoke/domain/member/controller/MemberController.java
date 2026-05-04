@@ -4,7 +4,6 @@ import com.example.karaoke.domain.auth.dto.CustomOAuth2User;
 import com.example.karaoke.domain.member.dto.MeResponseDto;
 import com.example.karaoke.domain.member.entity.Member;
 import com.example.karaoke.domain.member.repository.MemberRepository;
-import com.example.karaoke.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,14 +28,10 @@ public class MemberController {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원 입니다."));
 
         MeResponseDto meResponseDto = new MeResponseDto(
-                member.getId(),
-                member.getOauthId(),
-                member.getNickName(),
                 member.getRole() != null ? member.getRole().name() : null);
 
         return ResponseEntity.ok(meResponseDto);
     }
-
 
 
 }

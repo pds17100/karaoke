@@ -28,14 +28,6 @@ public class KaraokeController {
 
 
     /**
-     *  상세조회용
-     */
-    @GetMapping
-    public List<KaraokeResponseDto> getAllKaraokes() {
-        return karaokeService.getAllKaraokes();
-    }
-
-    /**
      *  단건용
      */
     @GetMapping("/{karaokeId}")
