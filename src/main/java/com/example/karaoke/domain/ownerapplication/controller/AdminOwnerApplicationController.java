@@ -18,13 +18,14 @@ public class AdminOwnerApplicationController {
 
     private final OwnerApplicationService ownerApplicationService;
 
+    //노래방이름, 이름, 연락처, 상태
     @GetMapping
     public ResponseEntity<List<OwnerApplicationAdminListResponseDto>> getApplications(
             @RequestParam(required = false) ApplicationStatus status) {
         return ResponseEntity.ok(ownerApplicationService.getApplicationsByStatus(status));
     }
 
-
+    //
     @GetMapping("/{applicationId}")
     public ResponseEntity<OwnerApplicationResponseDto> getApplication(
             @PathVariable Long applicationId
