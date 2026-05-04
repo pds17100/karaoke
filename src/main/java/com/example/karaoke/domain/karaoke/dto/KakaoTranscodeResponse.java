@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class KakaoTranscoordResponse {
+public class KakaoTranscodeResponse {
     private List<Document> documents;
 
     @Getter

@@ -1,6 +1,6 @@
 package com.example.karaoke.domain.karaoke;
 
-import com.example.karaoke.domain.karaoke.dto.KakaoTranscoordResponse;
+import com.example.karaoke.domain.karaoke.dto.KakaoTranscodeResponse;
 import com.example.karaoke.domain.karaoke.kakao.KakaoProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
@@ -13,7 +13,8 @@ import org.springframework.web.client.RestTemplate;
 
 @Component
 @RequiredArgsConstructor
-public class CoordinateConverter {
+public class
+CoordinateConverter {
 
     private final RestTemplate restTemplate;
     private final KakaoProperties kakaoProperties;
@@ -30,20 +31,20 @@ public class CoordinateConverter {
 
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<KakaoTranscoordResponse> response = restTemplate.exchange(
+        ResponseEntity<KakaoTranscodeResponse> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
                 entity,
-                KakaoTranscoordResponse.class
+                KakaoTranscodeResponse.class
         );
 
-        KakaoTranscoordResponse body = response.getBody();
+        KakaoTranscodeResponse body = response.getBody();
 
         if (body == null || body.getDocuments() == null || body.getDocuments().isEmpty()) {
             throw new IllegalStateException("카카오 좌표 변환 응답이 비어 있습니다.");
         }
 
-        KakaoTranscoordResponse.Document document = body.getDocuments().get(0);
+        KakaoTranscodeResponse.Document document = body.getDocuments().get(0);
 
         return new ConvertedCoordinate(document.getY(), document.getX());
     }

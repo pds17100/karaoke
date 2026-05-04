@@ -28,16 +28,6 @@ public class KakaoUserInfo {
         return nickname != null ? nickname.toString() : "카카오회원";
     }
 
-    @SuppressWarnings("unchecked")
-    public String getEmail() {
-        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        if (kakaoAccount == null) {
-            return null;
-        }
-
-        Object email = kakaoAccount.get("email");
-        return email != null ? email.toString() : null;
-    }
 
 
 }
