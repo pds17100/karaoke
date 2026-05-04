@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class Karaoke {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "karaoke_id")
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -68,6 +69,33 @@ public class Karaoke {
         }
         this.totalRooms = totalRooms;
         this.availableRooms = availableRooms;
+    }
+
+    /**
+     * 공공데이터 기준 기본 정보 갱신
+     */
+    public void updateBasicInfo(String name, String address, double latitude, double longitude, int totalRooms) {
+        if (totalRooms < 0) {
+            throw new IllegalArgumentException("총 방 개수는 0보다 작을 수 없습니다.");
+        }
+
+        this.name = name;
+        this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.totalRooms = totalRooms;
+
+        if (this.availableRooms > totalRooms) {
+            this.availableRooms = totalRooms;
+        }
+    }
+
+
+    /**
+     *  승인되면 해당 노래방에 owner 연결
+     */
+    public void assignOwner(Member owner) {
+        this.owner = owner;
     }
 
 

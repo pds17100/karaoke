@@ -39,7 +39,6 @@ public class Member {
      *  ADMIN 계정 생성 메서드
      */
     public static Member createAdmin(String oauthId, String nickName) {
-//        return new Member(oauthId, nickName, email, OAuthProvider.KAKAO, MemberRole.ADMIN);
         return new Member(oauthId, nickName, OAuthProvider.KAKAO, MemberRole.ADMIN);
     }
 
