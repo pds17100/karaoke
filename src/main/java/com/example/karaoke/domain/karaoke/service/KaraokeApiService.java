@@ -5,6 +5,7 @@ import com.example.karaoke.domain.karaoke.config.KaraokeProperties;
 import com.example.karaoke.domain.karaoke.dto.KaraokeApiResponse;
 import com.example.karaoke.domain.karaoke.dto.KaraokeApiResponseDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -15,6 +16,7 @@ import java.util.List;
 /**
  * 공공데이터 API 조회 + 좌표변환 + DTO 변환
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -27,14 +29,14 @@ public class KaraokeApiService {
     /**
      * 공공데이터 전체 조회 후 DTO 반환
      */
-    public List<KaraokeApiResponseDto> fetchKaraokes() {
+    public List<KaraokeApiResponseDto> fetchKaraokes(String regionCode) {
         int pageNo = 1;
         int numOfRows = 100;
 
         List<KaraokeApiResponseDto> result = new ArrayList<>();
 
         while (true) {
-            KaraokeApiResponse response = callApi(pageNo, numOfRows);
+            KaraokeApiResponse response = callApi(pageNo, numOfRows, regionCode);
             List<KaraokeApiResponse.Item> items = extractItems(response);
 
             if (items.isEmpty()) {
@@ -43,6 +45,7 @@ public class KaraokeApiService {
 
             List<KaraokeApiResponseDto> dtos = items.stream()
                     .map(this::toDto)
+                    .filter(dto -> dto != null)
                     .filter(dto -> dto.getManageNo() != null && !dto.getManageNo().isBlank())
                     .toList();
 
@@ -59,16 +62,21 @@ public class KaraokeApiService {
         return result;
     }
 
-    private KaraokeApiResponse callApi(int pageNo, int numOfRows) {
+
+    /**
+     *  지역 코드 넘기기
+     */
+    private KaraokeApiResponse callApi(int pageNo, int numOfRows, String regionCode) {
         String url = karaokeProperties.getBaseUrl()
                 + "?serviceKey=" + karaokeProperties.getServiceKey()
-                + "&cond[OPN_ATMY_GRP_CD::EQ]=5080000"
+                + "&cond[OPN_ATMY_GRP_CD::EQ]=" + regionCode
                 + "&cond[SALS_STTS_CD::EQ]=01"
                 + "&pageNo=" + pageNo
                 + "&numOfRows=" + numOfRows;
 
         return restTemplate.getForObject(url, KaraokeApiResponse.class);
     }
+
 
     private List<KaraokeApiResponse.Item> extractItems(KaraokeApiResponse response) {
         if (response == null
@@ -87,7 +95,9 @@ public class KaraokeApiService {
         double y = KaraokeApiResponseDto.parseCoordinate(item.getCRD_INFO_Y());
 
         if (x == 0.0 || y == 0.0) {
-            throw new IllegalArgumentException("좌표 정보가 올바르지 않습니다. manageNo=" + item.getMNG_NO());
+            // 예외 대신 null 반환 → filter로 걸러냄
+            log.warn("좌표 정보 없음, 건너뜀. manageNo={}", item.getMNG_NO());
+            return null;
         }
 
         CoordinateConverter.ConvertedCoordinate converted =

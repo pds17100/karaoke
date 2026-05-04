@@ -21,14 +21,14 @@ public class KaraokeSyncService {
 
 
     /**
-     *  공공데이터를 DB와 동기화 (N+1 문제 해결)
+     *  공공데이터를 DB와 동기화 (N+1 문제 해결), 구미
      */
-    public void syncKaraokes() {
-        List<KaraokeApiResponseDto> dtos = karaokeApiService.fetchKaraokes();
+    public void syncKaraokes(String regionCode) {
+        List<KaraokeApiResponseDto> dtos = karaokeApiService.fetchKaraokes(regionCode);
 
-        // 1. 전체 manageNo 목록 추출
+        // manageNo에 지역코드 prefix 붙이기
         List<String> manageNos = dtos.stream()
-                .map(KaraokeApiResponseDto::getManageNo)
+                .map(dto -> regionCode + "_" + dto.getManageNo())
                 .toList();
 
         // 2. SELECT 1번으로 기존 데이터 전부 조회 → Map으로 변환
@@ -41,7 +41,8 @@ public class KaraokeSyncService {
         List<Karaoke> toInsert = new ArrayList<>();
 
         for (KaraokeApiResponseDto dto : dtos) {
-            Karaoke existing = existingMap.get(dto.getManageNo());
+            String prefixedManageNo = regionCode + "_" + dto.getManageNo();
+            Karaoke existing = existingMap.get(prefixedManageNo);
 
             if (existing != null) {
                 // 기존 엔티티: dirty checking으로 자동 UPDATE (save 불필요)
@@ -55,7 +56,7 @@ public class KaraokeSyncService {
             } else {
                 // 신규 엔티티: INSERT 대상 목록에 추가
                 toInsert.add(Karaoke.builder()
-                        .manageNo(dto.getManageNo())
+                        .manageNo(prefixedManageNo)
                         .name(dto.getName())
                         .address(dto.getAddress())
                         .latitude(dto.getLatitude())
@@ -70,6 +71,7 @@ public class KaraokeSyncService {
         // 4. 신규 데이터 배치 INSERT (SELECT 1번 + INSERT 1번으로 종료)
         karaokeRepository.saveAll(toInsert);
     }
+
 
 
 }

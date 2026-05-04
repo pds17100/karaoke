@@ -14,10 +14,22 @@ import org.springframework.web.bind.annotation.*;
 public class KaraokeApiController {
     private final KaraokeSyncService karaokeSyncService;
 
-    @PostMapping("/load")
+    /**
+     *  구미
+     */
+    @PostMapping("/load/gumi")
     public ResponseEntity<String> loadKaraokes() {
-        karaokeSyncService.syncKaraokes();
-        return ResponseEntity.ok("노래방 데이터 동기화 완료");
+        karaokeSyncService.syncKaraokes("5080000");
+        return ResponseEntity.ok("구미 노래방 데이터 동기화 완료");
+    }
+
+    /**
+     *  서초
+     */
+    @PostMapping("/load/seocho")
+    public ResponseEntity<String> loadKaraokes2() {
+        karaokeSyncService.syncKaraokes("3210000");
+        return ResponseEntity.ok("서초 노래방 데이터 동기화 완료");
     }
 
 
