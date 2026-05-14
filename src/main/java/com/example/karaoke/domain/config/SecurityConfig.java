@@ -30,6 +30,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
+
+                //전체 다 열기
+/*                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll())*/
+
                 //  request 인증, 인가 설정
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers(
@@ -42,17 +47,19 @@ public class SecurityConfig {
                                         "/swagger-ui/**",
                                         "/v3/api-docs/**"
                                 ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/admin/create").permitAll()
-//                        .requestMatchers(HttpMethod.POST, "/api/karaokes/load").hasRole("ADMIN")
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/owner/**").hasRole("OWNER")
+                                .requestMatchers("/uploads/**").permitAll()
+//                                .requestMatchers(HttpMethod.POST, "/api/admin/create").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/karaokes/load").hasRole("ADMIN")
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/api/owner/**").hasRole("OWNER")
 
-                        .requestMatchers(HttpMethod.GET, "/api/karaokes/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/member/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/karaokes/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/karaokes/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/member/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/karaokes/**").permitAll()
 
-                        .anyRequest().authenticated()
+                                .anyRequest().authenticated()
                 )
+
                 //  oauth 설정
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo -> userInfo
@@ -61,13 +68,15 @@ public class SecurityConfig {
                         .defaultSuccessUrl("http://localhost:3001/", true)
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/logout") // 프론트에서 호출하는 URL
+                        .logoutUrl("/logout")
                         .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(200); // React에서는 리다이렉트 대신 200 응답이 필요
+                            response.sendRedirect("http://localhost:3001/");  // 프론트로 리다이렉트
                         })
-                        .invalidateHttpSession(true) // 세션 삭제
-                        .deleteCookies("JSESSIONID") // 쿠키 삭제
+                        .invalidateHttpSession(true)
+                        .deleteCookies("SESSION")
+                        .clearAuthentication(true)
                 );
+
 
         return http.build();
     }
