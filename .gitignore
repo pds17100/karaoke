@@ -40,3 +40,4 @@ out/
 /src/main/resources/.env
 /src/main/resources/application.yml
 /src/main/java/com/example/karaoke/domain/karaoke/controller/AdminController.java
+.env
