@@ -13,12 +13,16 @@ public class KaraokeMapResponseDto {
     private Long id;
     private double latitude;
     private double longitude;
+    private int totalRooms;
+    private int availableRooms;
 
     public static KaraokeMapResponseDto from(Karaoke karaoke) {
         return new KaraokeMapResponseDto(
                 karaoke.getId(),
                 karaoke.getLatitude(),
-                karaoke.getLongitude()
+                karaoke.getLongitude(),
+                karaoke.getTotalRooms(),
+                karaoke.getAvailableRooms()
         );
     }
 
