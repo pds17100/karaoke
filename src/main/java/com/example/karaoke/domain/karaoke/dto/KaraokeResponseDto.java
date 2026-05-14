@@ -11,8 +11,8 @@ public class KaraokeResponseDto {
     private String name;
     private double latitude;
     private double longitude;
+    private int totalRooms;
     private int availableRooms;
-//    private boolean owned;
 
     public static KaraokeResponseDto from(Karaoke karaoke) {
         return new KaraokeResponseDto(
@@ -20,8 +20,8 @@ public class KaraokeResponseDto {
                 karaoke.getName(),
                 karaoke.getLatitude(),
                 karaoke.getLongitude(),
+                karaoke.getTotalRooms(),
                 karaoke.getAvailableRooms()
-//                karaoke.getOwner() != null
         );
     }
 
