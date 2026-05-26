@@ -31,6 +31,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
@@ -38,6 +39,11 @@ services:
       SPRING_DATA_REDIS_PORT: ${SPRING_DATA_REDIS_PORT}
       KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY}
       KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
+      KARAOKE_API_BASE_URL: ${KARAOKE_API_BASE_URL}
+      KARAOKE_API_SERVICE_KEY: ${KARAOKE_API_SERVICE_KEY}
+      FILE_UPLOAD_DIR: /app/uploads
+    volumes:
+      - ./uploads:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -50,9 +56,11 @@ services:
     build:
       context: ../karaoke-front
       args:
-        REACT_APP_BACKEND_URL: http://localhost:8080
+        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL}
+        REACT_APP_KAKAO_REST_API_KEY: ${REACT_APP_KAKAO_REST_API_KEY}
+        REACT_APP_KAKAO_LOGOUT_REDIRECT_URI: ${REACT_APP_KAKAO_LOGOUT_REDIRECT_URI}
     ports:
-      - "3001:80"
+      - "3000:80"
     depends_on:
       - spring
     networks:
