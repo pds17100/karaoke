@@ -16,7 +16,9 @@ spring:
           batch_size: 50
         default_batch_fetch_size: 100
 
-
+  cache:
+    redis:
+      time-to-live: 3600000
 
   data:
     redis:
@@ -24,7 +26,7 @@ spring:
       port: ${SPRING_DATA_REDIS_PORT:6379}
   session:
     store-type: redis
-    timeout: 300
+    timeout: 1800
 
   security:
     oauth2:
