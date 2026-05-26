@@ -2,6 +2,7 @@ package com.example.karaoke.domain.karaoke.controller;
 
 import com.example.karaoke.domain.karaoke.dto.KaraokeMapResponseDto;
 import com.example.karaoke.domain.karaoke.dto.KaraokeResponseDto;
+import com.example.karaoke.domain.karaoke.dto.KaraokeStatusDto;
 import com.example.karaoke.domain.karaoke.service.KaraokeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,11 +20,19 @@ public class KaraokeController {
     private final KaraokeService karaokeService;
 
     /**
-     *  지도용
+     *  지도용 (새로고침용, 캐시)
      */
     @GetMapping("/map")
     public List<KaraokeMapResponseDto> getKaraokesForMap() {
         return karaokeService.getKaraokesForMap();
+    }
+
+    /**
+     *  남은 좌석 폴링용 (캐시)
+     */
+    @GetMapping("/status")
+    public List<KaraokeStatusDto> getAllStatus() {
+        return karaokeService.getAllStatus();
     }
 
 
