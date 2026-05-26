@@ -1,14 +1,21 @@
 package com.example.karaoke.domain.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 
+
+import java.time.Duration;
+
 @Configuration
 @EnableRedisHttpSession
+@EnableCaching
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
@@ -20,6 +27,21 @@ public class RedisConfig {
     public LettuceConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(new RedisStandaloneConfiguration(host, port));
     }
+
+    @Bean
+    public RedisCacheManager cacheManager(LettuceConnectionFactory connectionFactory) {
+        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .disableCachingNullValues();
+
+        return RedisCacheManager.builder(connectionFactory)
+                .cacheDefaults(defaultConfig.entryTtl(Duration.ofHours(1)))
+                .withCacheConfiguration("karaokeMap",
+                        defaultConfig.entryTtl(Duration.ofHours(1)))
+                .withCacheConfiguration("karaokeStatus",
+                        defaultConfig.entryTtl(Duration.ofSeconds(30)))
+                .build();
+    }
+
 
 
 }
