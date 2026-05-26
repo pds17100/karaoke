@@ -2,9 +2,11 @@ package com.example.karaoke.domain.karaoke.service;
 
 import com.example.karaoke.domain.karaoke.dto.KaraokeMapResponseDto;
 import com.example.karaoke.domain.karaoke.dto.KaraokeResponseDto;
+import com.example.karaoke.domain.karaoke.dto.KaraokeStatusDto;
 import com.example.karaoke.domain.karaoke.entity.Karaoke;
 import com.example.karaoke.domain.karaoke.repository.KaraokeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,8 +20,9 @@ public class KaraokeService {
     private final KaraokeRepository karaokeRepository;
 
     /**
-     *  지도용
+     *  지도용(캐시o)
      */
+    @Cacheable(value = "karaokeMap")
     public List<KaraokeMapResponseDto> getKaraokesForMap() {
         return karaokeRepository.findAll()
                 .stream()
@@ -29,13 +32,16 @@ public class KaraokeService {
 
 
     /**
-     *  상세조회용
+     *  남은자리용(캐시o)
      */
-    public List<KaraokeResponseDto> getAllKaraokes() {
-        return karaokeRepository.findAll().stream()
-                .map(KaraokeResponseDto::from)
+    @Cacheable(value = "karaokeStatus")
+    public List<KaraokeStatusDto> getAllStatus() {
+        return karaokeRepository.findAll()
+                .stream()
+                .map(KaraokeStatusDto::from)
                 .toList();
     }
+
 
     /**
      *  단건용
@@ -46,8 +52,6 @@ public class KaraokeService {
 
         return KaraokeResponseDto.from(karaoke);
     }
-
-
 
 
 
